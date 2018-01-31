@@ -1,17 +1,21 @@
 import sqlite3
 from sqlite3 import Error
 
-import config
+from web_scraper import config
 
 '''
 SQLite database operations
 Author: Shruti Rachh
 '''
 
+
 class DBUtils:
     '''
     This class provides methods to create, insert and get data from SQLite database
     '''
+
+    def __init__(self, db_name):
+        self.db_name = db_name
 
     def create_db_connection(self):
         '''
@@ -19,10 +23,10 @@ class DBUtils:
         :return: connection object if successful, otherwise returns None
         '''
         try:
-            conn = sqlite3.connect(config.db_name)
+            conn = sqlite3.connect(self.db_name, timeout=10)
             return conn
-        except Error as e:
-            print(e)
+        except Error:
+            print('Connection Failed!')
         return None
 
     def create_db_tables(self):
@@ -33,11 +37,11 @@ class DBUtils:
         if conn:
             cur = conn.cursor()
             cur.execute('DROP TABLE IF EXISTS ' + config.image_metadata_table)
-            cur.execute('''CREATE TABLE IF NOT EXISTS ''' + config.image_metadata_table +
-                        '''(id TEXT PRIMARY KEY, filename TEXT, latitude NUMBER, longitude NUMBER)''')
             cur.execute('DROP TABLE IF EXISTS ' + config.default_geo_info_table)
-            cur.execute('''CREATE TABLE IF NOT EXISTS ''' + config.default_geo_info_table +
-                        '''(search_text TEXT PRIMARY KEY, latitude NUMBER, longitude NUMBER)''')
+            cur.execute('CREATE TABLE ' + config.image_metadata_table +
+                        '(id TEXT PRIMARY KEY, filename TEXT, latitude NUMBER, longitude NUMBER)')
+            cur.execute('CREATE TABLE ' + config.default_geo_info_table +
+                        '(search_text TEXT PRIMARY KEY, latitude NUMBER, longitude NUMBER)')
             conn.commit()
             conn.close()
 
@@ -47,7 +51,7 @@ class DBUtils:
         :param table_name: name of the table to fetch data from
         :param param_name: primary key name
         :param param_value: primary key value
-        :return: data as a list if present, otherwise an empty list
+        :returns data as a list if present, otherwise an empty list
         '''
         conn = self.create_db_connection()
         rows = []
@@ -68,7 +72,7 @@ class DBUtils:
         conn = self.create_db_connection()
         if conn:
             placeholders = ",".join(['?']*len(values))
-            sql = "INSERT OR IGNORE into {} values({})".format(table_name, placeholders)
+            sql = 'INSERT OR IGNORE into {} values({})'.format(table_name, placeholders)
             cur = conn.cursor()
             cur.execute(sql, values)
             conn.commit()
