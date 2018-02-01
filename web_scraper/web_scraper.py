@@ -16,14 +16,16 @@ import argparse
 Library to scrape images from Flickr based on search text list in parallel
 
 Run:
-1. Activate virtualenv which has the needed libraries that are used.
-    Mac/Linux: scraper/bin/activate
-2. python web_scraper.py paris rome "new york" [--photos_per_page] [-h]
+1. Run the shell script which will create a virtual environment named scraper and installs the needed python packages:
+    sh setup.sh
+2. Activate virtualenv, if not activated already.
+    Mac/Linux: . scraper/bin/activate
+3. python web_scraper.py paris rome "new york" [--photos_per_page] [-h]
     It takes the following arguments:
     - list of locations each separated by space and put double quotes around locations containing space.
     - optional --photos_per_page: number of photos to be retrieved at same time (max=500)
     - optional -h: check usage
-3. Check results:
+4. Check results:
      sqlite3 scraper.db
      select * from image_metadata;
 Author: Shruti Rachh
