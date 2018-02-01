@@ -1,7 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 
-from web_scraper import config
+from scrape_flickr import config
 
 '''
 SQLite database operations
@@ -15,6 +15,10 @@ class DBUtils:
     '''
 
     def __init__(self, db_name):
+        '''
+        Initializes the database name
+        :param db_name: name of database, example, scraper.db
+        '''
         self.db_name = db_name
 
     def create_db_connection(self):
@@ -23,7 +27,7 @@ class DBUtils:
         :return: connection object if successful, otherwise returns None
         '''
         try:
-            conn = sqlite3.connect(self.db_name, timeout=10)
+            conn = sqlite3.connect(self.db_name, timeout=30)
             return conn
         except Error:
             print('Connection Failed!')

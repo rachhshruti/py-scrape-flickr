@@ -12,6 +12,7 @@ import db_utils
 import time
 import argparse
 
+
 '''
 Library to scrape images from Flickr based on search text list in parallel
 
@@ -19,8 +20,8 @@ Run:
 1. Run the shell script which will create a virtual environment named scraper and installs the needed python packages:
     sh setup.sh
 2. Activate virtualenv, if not activated already.
-    Mac/Linux: . scraper/bin/activate
-3. python web_scraper.py paris rome "new york" [--photos_per_page] [-h]
+     . scraper/bin/activate
+3. python scrape_flickr.py paris rome "new york" [--photos_per_page] [-h]
     It takes the following arguments:
     - list of locations each separated by space and put double quotes around locations containing space.
     - optional --photos_per_page: number of photos to be retrieved at same time (max=500)
@@ -41,7 +42,7 @@ class WebScraper:
     def __init__(self, search_text_list, photos_per_page):
         '''
         Constructor to initialize the parameters needed by Flickr API to retrieve the images in parallel
-        :param search_text_list: list of searches to be made
+        :param search_text_list: list of locations to be searched
         :param photos_per_page: number of photos to be retrieved at a time (MAX=500), a limit set by Flickr API
         '''
         self.search_text_list = set(search_text_list)
@@ -122,10 +123,10 @@ class WebScraper:
 
     def get_missing_geo_data(self, search_text):
         '''
-        Gets the missing geo data using Google Maps API based on generic search text.
+        Gets the missing geo data using Google Maps API based on generic location that was searched.
         Saves this data in database for future use.
-        :param search_text: text that was searched, assuming it is a place.
-        :return: a tuple (search_text,latitude,longitude)
+        :param search_text: location that was searched
+        :return: a tuple (search_text, latitude, longitude)
         '''
         result = self.dbutils.get_data(config.default_geo_info_table, 'search_text', search_text)
         if result:
@@ -135,7 +136,6 @@ class WebScraper:
             if matches:
                 geo_info = matches[0]['geometry']['location']
                 params = (search_text, str(geo_info['lat']), str(geo_info['lng']))
-
                 self.dbutils.insert_data(config.default_geo_info_table, params)
                 return params
         return ()
@@ -143,9 +143,8 @@ class WebScraper:
     def insert_image_metadata_db(self, photo, search_text):
         '''
         Inserts image metadata such as id, filename and geo information into the sqlite database, if not already inserted.
-        :param photo: image data
+        :param photo: image data to be inserted
         :param search_text: text that was searched used for the purpose of handling missing geo information
-        :returns True if successfully inserted, False if it could not be inserted or was already inserted
         '''
         result = self.dbutils.get_data(config.image_metadata_table, 'id', photo['id'])
         if not result:
@@ -159,7 +158,7 @@ class WebScraper:
 
     def get_no_of_pages(self, search_text):
         '''
-        Gets the number of pages for the given search text depending on the number of photos that are retrieved per page.
+        Gets the number of pages for the given search text depending on the number of photos that are retrieved per page
         :param search_text: text to be searched
         :returns number of pages
         '''
@@ -170,10 +169,12 @@ class WebScraper:
         Gets the pages for the given search text and processes the images in parallel
         :param search_text: text to be searched
         '''
+        print('Fetching images for ' + search_text)
         no_of_pages = self.get_no_of_pages(search_text)
         for page_no in range(1, no_of_pages):
             photos = self.flickr.photos.search(text=search_text, per_page=self.photos_per_page, extras=self.extras,
                                                page=page_no)['photos']['photo']
+            print('Collecting page ' + str(page_no) + ' image metadata for ' + search_text)
             sub_process_pool = NoDaemonProcessPool(self.no_of_processors)
             sub_process_pool.map(partial(self.insert_image_metadata_db, search_text=search_text), photos)
             sub_process_pool.close()
@@ -202,15 +203,19 @@ class NoDaemonProcessPool(multiprocessing.pool.Pool):
 
 if __name__ == '__main__':
     start = time.time()
+
+    # Command-line arguments and options
     parser = argparse.ArgumentParser()
     parser.add_argument('search_list', type=str, nargs='+', help='list of locations whose photos are to be searched on Flickr')
     parser.add_argument('--photos_per_page', type=int, default=500, help='number of photos to be retrieved at same time (max=500), limit set by Flickr')
     args = parser.parse_args()
     scraper = WebScraper(args.search_list, args.photos_per_page)
+    print('Creating needed tables')
     scraper.dbutils.create_db_tables()
 
     # Creates a pool of no daemon processes to allow for parallel searches of images and in turn creates sub processes
     # to get the images metadata in parallel
+    print('Assigning jobs to multiple processors')
     pool = NoDaemonProcessPool(scraper.no_of_processors_prop)
     pool.map(scraper.get_pages, scraper.search_text_list)
     pool.close()

@@ -1,8 +1,6 @@
 import unittest
 from unittest.mock import patch
-
-from web_scraper import WebScraper
-
+from scrape_flickr import WebScraper
 '''
 Unit testing for web scraper library
 Author: Shruti Rachh
@@ -27,8 +25,8 @@ class TestWebScraper(unittest.TestCase):
         '''
         del self.test_scraper
 
-    @patch('web_scraper.db_utils.DBUtils.get_data')
-    @patch('web_scraper.db_utils.DBUtils.insert_data')
+    @patch('db_utils.DBUtils.get_data')
+    @patch('db_utils.DBUtils.insert_data')
     @patch('googlemaps.Client.geocode')
     def test_get_missing_geo_data(self, google_maps_result, is_data_inserted, get_data_result):
         expected_result = (self.search_text_list[0], '48.864716', '2.349014')
@@ -57,14 +55,9 @@ class TestWebScraper(unittest.TestCase):
         actual_result = self.test_scraper.get_missing_geo_data('par')
         self.assertFalse(actual_result)
 
-    def test_get_no_of_pages(self):
-        expected_result_paris = 402
-        actual_result = self.test_scraper.get_no_of_pages(self.search_text_list[0])
-        self.assertEqual(expected_result_paris, actual_result)
-
-    @patch('web_scraper.db_utils.DBUtils.get_data')
-    @patch('web_scraper.db_utils.DBUtils.insert_data')
-    @patch('web_scraper.WebScraper.get_missing_geo_data')
+    @patch('db_utils.DBUtils.get_data')
+    @patch('db_utils.DBUtils.insert_data')
+    @patch('scrape_flickr.WebScraper.get_missing_geo_data')
     def test_insert_image_metadata_db(self, missing_geo_data, is_data_inserted, get_data_result):
         get_data_result.return_value = []
         missing_geo_data.return_value = (self.search_text_list[0], '48.864716', '2.349014')
