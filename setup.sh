@@ -2,4 +2,4 @@
 pip3 install virtualenv
 virtualenv -p python3 --no-site-packages --distribute scraper
 . ./scraper/bin/activate
-pip install -r requirements.txt
+pip3 install -r requirements.txt
