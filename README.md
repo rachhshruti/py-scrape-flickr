@@ -1,15 +1,15 @@
 # Image scraper for Flickr using Multiprocessing in Python
 Python library to scrape images in parallel from Flickr based on given list of locations like rome, paris and so on.
 It extracts the filename and geo information about the images and inserts into SQLite database. In case of missing geo
-information, it uses GoogleMaps API to extract this information based on the generic location (example, paris) that was
+information, it uses Bing Maps API to extract this information based on the generic location (example, paris) that was
 searched.
 
 # Requirements
 1. [Python3](https://www.python.org/downloads/release/python-364/)
 2. [Pip3: python3 get-pip.py](https://bootstrap.pypa.io/get-pip.py)
-3. API keys: Get the Flickr and GoogleMaps API keys from below links and insert it into scrape-flickr/config.py
+3. API keys: Get the Flickr and Bing Maps API keys from below links and insert it into scrape-flickr/config.py
     * [Flickr API keys](https://www.flickr.com/services/api/misc.api_keys.html)
-    * [GoogleMaps API key](https://developers.google.com/maps/documentation/geocoding/get-api-key)
+    * [Bing Maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key)
 
 
 # SQLite database
@@ -19,7 +19,7 @@ The following tables get created in this code:
     * filename: title of the image
     * latitude: latitude of the location in the image
     * longitude: longitude of the location in the image
-2. __default_geo_info:__ used to store missing geo information of images using GoogleMaps API
+2. __default_geo_info:__ used to store missing geo information of images using Bing Maps API
     * search_text: location that was searched on Flickr
     * latitude: latitude of the location
     * longitude: longitude of the location
@@ -69,4 +69,4 @@ This code is tested on Mac and Windows 10.
 
 [Flickr Photos Search](https://www.flickr.com/services/api/flickr.photos.search.html)
 
-[GoogleMaps Geocoding](https://developers.google.com/maps/documentation/geocoding/intro)
+[Bing Maps Geocoding](https://geocoder.readthedocs.io/providers/Bing.html)

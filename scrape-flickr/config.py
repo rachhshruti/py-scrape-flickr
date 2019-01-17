@@ -5,7 +5,7 @@ FLICKR_SECRET = 'YOUR FLICKR PRIVATE KEY'
 # comma-separated string containing extra information to be retrieved for the photos, used here to get geo information
 extras = 'geo'
 
-GOOGLE_API_KEY = 'YOUR GOOGLEAPI KEY'
+BING_MAPS_API_KEY = 'YOUR BING MAPS API KEY'
 
 '''DB params'''
 db_name = 'scraper.db'

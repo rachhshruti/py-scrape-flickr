@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from flickrapi import FlickrAPI
-import googlemaps
+import geocoder
 
 import multiprocessing
 from multiprocessing import pool
@@ -36,7 +36,7 @@ Author: Shruti Rachh
 class WebScraper:
     '''
     This class provides functionality to scrape images with multiple searches all executing in parallel.
-    It uses Flickr API to get the images information and Google Maps API to handle missing geo data.
+    It uses Flickr API to get the images information and Bing Maps API to handle missing geo data.
     '''
 
     def __init__(self, search_text_list, photos_per_page):
@@ -52,11 +52,7 @@ class WebScraper:
             self.photos_per_page = photos_per_page
         self.extras = config.extras
         self.flickr = FlickrAPI(config.FLICKR_PUBLIC, config.FLICKR_SECRET, format='parsed-json')
-
         self.no_of_processors = multiprocessing.cpu_count()
-
-        # Google Maps API is used to get the missing geo info in images
-        self.maps = googlemaps.Client(key=config.GOOGLE_API_KEY)
         self.dbutils = db_utils.DBUtils(config.db_name)
 
     def add_search_text(self, search_text):
@@ -123,7 +119,7 @@ class WebScraper:
 
     def get_missing_geo_data(self, search_text):
         '''
-        Gets the missing geo data using Google Maps API based on generic location that was searched.
+        Gets the missing geo data using Bing Maps API based on generic location that was searched.
         Saves this data in database for future use.
         :param search_text: location that was searched
         :return: a tuple (search_text, latitude, longitude)
@@ -132,10 +128,10 @@ class WebScraper:
         if result:
             return result[0]
         else:
-            matches = self.maps.geocode(search_text)
+            matches = geocoder.bing(search_text, key=config.BING_MAPS_API_KEY)
             if matches:
-                geo_info = matches[0]['geometry']['location']
-                params = (search_text, str(geo_info['lat']), str(geo_info['lng']))
+                geo_info = matches.latlng
+                params = (search_text, str(geo_info[0]), str(geo_info[1]))
                 self.dbutils.insert_data(config.default_geo_info_table, params)
                 return params
         return ()
@@ -193,6 +189,7 @@ class NoDaemonProcess(multiprocessing.Process):
     def _set_daemon(self, value):
         pass
     daemon = property(_get_daemon, _set_daemon)
+
 
 class NoDaemonProcessPool(multiprocessing.pool.Pool):
     '''
