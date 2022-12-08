@@ -1,4 +1,4 @@
-certifi==2018.1.18
+certifi==2022.12.7
 chardet==3.0.4
 flickrapi==2.3.1
 geocoder==1.38.1
