@@ -4,7 +4,7 @@ flickrapi==2.3.1
 geocoder==1.38.1
 idna==2.6
 oauthlib==2.0.6
-requests==2.20.0
+requests==2.32.2
 requests-oauthlib==0.8.0
 requests-toolbelt==0.8.0
 six==1.11.0
